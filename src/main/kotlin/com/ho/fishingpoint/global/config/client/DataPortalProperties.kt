@@ -6,5 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties(prefix = "external-api.data-portal")
 data class DataPortalProperties(
     val baseHost: String,
-    val serviceKey: String
+    val serviceKey: String,
+    val tidePath: String,
 )

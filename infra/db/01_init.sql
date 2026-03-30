@@ -291,3 +291,37 @@ SET sea_zone = 'SOUTH'
 WHERE post_id IN (
                   'SO_1279', 'SO_1278', 'SO_1266'
     );
+
+
+-- tb_tide_forecast 테이블
+CREATE TABLE tb_tide_forecast
+(
+    id            BIGSERIAL       NOT NULL,
+    obs_post_id   VARCHAR(20)     NOT NULL,
+    obs_post_name VARCHAR(255)    NOT NULL,
+    forecast_dt   TIMESTAMP       NOT NULL,
+    tide_level    INTEGER         NOT NULL,
+    extr_se       INTEGER         NOT NULL,
+    tide_type     VARCHAR(20)     NOT NULL,
+    is_high_tide  BOOLEAN         NOT NULL,
+    created_at    TIMESTAMP       NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT pk_tide_forecast PRIMARY KEY (id),
+    CONSTRAINT uq_tide_forecast_post_dt UNIQUE (obs_post_id, forecast_dt)
+);
+
+-- 컬럼 코멘트
+COMMENT ON TABLE  tb_tide_forecast                IS '조석 예보 정보';
+COMMENT ON COLUMN tb_tide_forecast.id             IS 'PK';
+COMMENT ON COLUMN tb_tide_forecast.obs_post_id    IS '관측소 코드 (tb_tide_observation_post.post_id FK)';
+COMMENT ON COLUMN tb_tide_forecast.obs_post_name  IS '관측소명';
+COMMENT ON COLUMN tb_tide_forecast.forecast_dt    IS '예측 일시 (yyyyMMddHHmm)';
+COMMENT ON COLUMN tb_tide_forecast.tide_level     IS '예측 조위값 (cm)';
+COMMENT ON COLUMN tb_tide_forecast.extr_se        IS '극치구분 코드 (1: 오전 고조, 2: 오전 저조, 3: 오후 고조, 4: 오후 저조)';
+COMMENT ON COLUMN tb_tide_forecast.tide_type      IS '극치구분 설명 (오전 고조 / 오전 저조 / 오후 고조 / 오후 저조)';
+COMMENT ON COLUMN tb_tide_forecast.is_high_tide   IS '만조 여부 (true: 만조, false: 간조)';
+COMMENT ON COLUMN tb_tide_forecast.created_at     IS '생성일시';
+
+-- 조회 성능용 인덱스
+CREATE INDEX idx_tide_forecast_obs_post_id  ON tb_tide_forecast (obs_post_id);
+CREATE INDEX idx_tide_forecast_forecast_dt  ON tb_tide_forecast (forecast_dt);

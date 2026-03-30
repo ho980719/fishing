@@ -5,6 +5,12 @@ spring:
     password: fishing
     driver-class-name: org.postgresql.Driver
 
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: always
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -30,3 +36,4 @@ external-api:
   data-portal:
     base-host: https://apis.data.go.kr
     service-key: "92SczIrYwj8mC0Jl%2FvD%2BfoJWNQVgGR1ovK9SRRKKk7PL2UIVo7FrmhEE7PUux9%2BEQPcFEqCbJKTvRCcgAduoxA%3D%3D"
+    tide-path: /1192136/tideFcstHghLw/GetTideFcstHghLwApiService
