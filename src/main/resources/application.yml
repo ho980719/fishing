@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/fishing?currentSchema=fishing&reWriteBatchedInserts=true
+    username: fishing
+    password: fishing
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.spatial.dialect.postgis.PostgisPGDialect
+    hibernate:
+      ddl-auto: validate # \uC774\uBBF8 \uD14C\uC774\uBE14\uC744 \uB9CC\uB4E4\uC5C8\uC73C\uBBC0\uB85C validate \uAD8C\uC7A5
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        # \uC2A4\uD0A4\uB9C8\uAC00 public\uC774 \uC544\uB2D0 \uB54C \uD558\uC774\uBC84\uB124\uC774\uD2B8\uAC00 \uD14C\uC774\uBE14\uC744 \uC798 \uCC3E\uB3C4\uB85D \uC124\uC815
+        default_schema: fishing
+        # \uC131\uB2A5\uC744 \uC704\uD55C \uBC30\uCE58 \uC124\uC815 (\uB098\uC911\uC5D0 \uC88C\uD45C \uC5C5\uB370\uC774\uD2B8 \uC2DC \uC720\uB9AC)
+        jdbc:
+          batch_size: 100
+          order_inserts: true
+          order_updates: true
+
+  # (\uC120\uD0DD) JSON \uC751\uB2F5 \uC2DC \uB0A0\uC9DC \uD3EC\uB9F7\uD305
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null

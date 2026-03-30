@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: fishing-db
+    restart: always
+    environment:
+      POSTGRES_USER: fishing
+      POSTGRES_PASSWORD: fishing
+      POSTGRES_DB: fishing
+      TZ: Asia/Seoul
+    ports:
+      - "5432:5432"
+    volumes:
+      - /postgres/data:/var/lib/postgresql/data
+      - ./infra/db/:/docker-entrypoint-initdb.d
+    networks:
+      - fishing-network
+
+networks:
+  fishing-network:
+    driver: bridge
