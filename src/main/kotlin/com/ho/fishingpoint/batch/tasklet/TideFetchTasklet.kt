@@ -4,7 +4,6 @@ import com.ho.fishingpoint.batch.client.TideApiClient
 import com.ho.fishingpoint.batch.client.dto.ExtrSe
 import com.ho.fishingpoint.domain.post.entity.TideObservationPost
 import com.ho.fishingpoint.domain.post.repository.TideObservationPostRepository
-import com.ho.fishingpoint.domain.tide.entity.TideForecast
 import com.ho.fishingpoint.domain.tide.repository.TideForecastRepository
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.scope.context.ChunkContext

@@ -1,4 +1,3 @@
-// batch/scheduler/TideScheduler.kt
 package com.ho.fishingpoint.batch.scheduler
 
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
