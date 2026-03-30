@@ -25,3 +25,8 @@ spring:
       datetime:
         WRITE_DATES_AS_TIMESTAMPS: false
     default-property-inclusion: non_null
+
+external-api:
+  data-portal:
+    base-host: https://apis.data.go.kr
+    service-key: "92SczIrYwj8mC0Jl%2FvD%2BfoJWNQVgGR1ovK9SRRKKk7PL2UIVo7FrmhEE7PUux9%2BEQPcFEqCbJKTvRCcgAduoxA%3D%3D"
