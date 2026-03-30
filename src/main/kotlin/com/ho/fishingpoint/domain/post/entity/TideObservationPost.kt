@@ -21,7 +21,7 @@ class TideObservationPost(
     @Column(name = "sea_zone")
     var seaZone: SeaZone?,
 
-    @Column(name = "location", columnDefinition = "geography(Point, 4326)")
+    @Column(name = "location", columnDefinition = "geography")
     var location: Point? = null
 ) {
     @Column(name = "created_at", updatable = false)
