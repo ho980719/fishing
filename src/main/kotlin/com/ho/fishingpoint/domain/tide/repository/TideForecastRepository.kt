@@ -1,6 +1,7 @@
 package com.ho.fishingpoint.domain.tide.repository
 
 import com.ho.fishingpoint.domain.tide.entity.TideForecast
+import jakarta.transaction.Transactional
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -13,7 +14,8 @@ interface TideForecastRepository : JpaRepository<TideForecast, Long> {
 
     fun findByForecastDtBetween(from: LocalDateTime, to: LocalDateTime): List<TideForecast>
 
-    @Modifying
+    @Transactional
+    @Modifying(clearAutomatically = true)
     @Query(
         value = """
             INSERT INTO tb_tide_forecast 
@@ -37,5 +39,5 @@ interface TideForecastRepository : JpaRepository<TideForecast, Long> {
         @Param("extrSe") extrSe: Int,
         @Param("tideType") tideType: String,
         @Param("isHighTide") isHighTide: Boolean,
-    )
+    ): Int
 }

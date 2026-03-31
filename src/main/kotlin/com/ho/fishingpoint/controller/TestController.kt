@@ -1,4 +1,4 @@
-package com.ho.fishingpoint.api.controller
+package com.ho.fishingpoint.controller
 
 import com.ho.fishingpoint.batch.scheduler.TideScheduler
 import com.ho.fishingpoint.domain.post.entity.TideObservationPost

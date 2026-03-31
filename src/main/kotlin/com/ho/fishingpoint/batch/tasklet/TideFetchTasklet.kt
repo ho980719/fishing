@@ -1,10 +1,11 @@
 package com.ho.fishingpoint.batch.tasklet
 
+import com.ho.fishingpoint.service.tide.TideForecastBulkService
 import com.ho.fishingpoint.batch.client.TideApiClient
 import com.ho.fishingpoint.batch.client.dto.ExtrSe
 import com.ho.fishingpoint.domain.post.entity.TideObservationPost
 import com.ho.fishingpoint.domain.post.repository.TideObservationPostRepository
-import com.ho.fishingpoint.domain.tide.repository.TideForecastRepository
+import com.ho.fishingpoint.model.tide.TideForecastUpsertDto
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.core.step.StepContribution
@@ -19,11 +20,10 @@ import java.time.format.DateTimeFormatter
 class TideFetchTasklet(
     private val tideApiClient: TideApiClient,
     private val tideObservationPostRepository: TideObservationPostRepository,
-    private val tideForecastRepository: TideForecastRepository
+    private val tideForecastBulkService: TideForecastBulkService
 ) : Tasklet {
 
     private val log = LoggerFactory.getLogger(javaClass)
-    private val dateFmt = DateTimeFormatter.ofPattern("yyyyMMdd")
     private val predcDtFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
@@ -34,28 +34,21 @@ class TideFetchTasklet(
         }
 
         val today = LocalDate.now()
-        val dates = (0 until 7).map { today.plusDays(it.toLong()) }
 
-        log.info(
-            "[TideFetchTasklet] 시작 - 관측소: {}개, 기간: {} ~ {}",
-            stations.size, dates.first(), dates.last()
-        )
+        log.info("[TideFetchTasklet] 시작 - 관측소: {}개, 요청일자: {}", stations.size, today)
 
         var totalSaved = 0
         var totalSkipped = 0
 
         stations.forEach { station ->
-            dates.forEach { date ->
-                runCatching {
-                    fetchAndSave(station, date).also { totalSaved += it }
-                }.onFailure { e ->
-                    log.error(
-                        "[TideFetchTasklet] 수집 실패 - 관측소: {}({}), 날짜: {}, 원인: {}",
-                        station.postName, station.postId, date, e.message
-                    )
-                    contribution.incrementProcessSkipCount()
-                    totalSkipped++
-                }
+            runCatching {
+                fetchAndSave(station, today).also { totalSaved += it }
+            }.onFailure { e ->
+                log.error("[TideFetchTasklet] 수집 실패 - 관측소: {}({}), 날짜: {}, 원인: {}"
+                    , station.postName, station.postId, today, e.message
+                )
+                contribution.incrementProcessSkipCount()
+                totalSkipped++
             }
         }
 
@@ -63,27 +56,27 @@ class TideFetchTasklet(
         return RepeatStatus.FINISHED
     }
 
-    private fun fetchAndSave(station: TideObservationPost, date: LocalDate): Int {
+    private fun fetchAndSave(station: TideObservationPost, today: LocalDate): Int {
         val items = tideApiClient
-            .fetchTide(station.postId, date.format(dateFmt))
+            .fetchTide(station.postId)
             .block()
             ?.body?.items?.item
             .orEmpty()
 
         if (items.isEmpty()) {
             log.debug("[TideFetchTasklet] 데이터 없음 - 관측소: {}({}), 날짜: {}",
-                station.postName, station.postId, date
+                station.postName, station.postId, today
             )
             return 0
         }
 
         var savedCount = 0
-        items.forEach { item ->
+
+        val rows = items.mapNotNull { item ->
             runCatching {
                 val extrSe = ExtrSe.from(item.extrSe)
                 val forecastDt = LocalDateTime.parse(item.predcDt, predcDtFmt)
-
-                tideForecastRepository.upsert(
+                TideForecastUpsertDto(
                     obsPostId   = station.postId,
                     obsPostName = item.obsvtrNm,
                     forecastDt  = forecastDt,
@@ -92,16 +85,15 @@ class TideFetchTasklet(
                     tideType    = extrSe.description,
                     isHighTide  = extrSe.isHighTide
                 )
-                savedCount++
             }.onFailure { e ->
-                log.warn("[TideFetchTasklet] 아이템 upsert 실패 - predcDt: {}, 원인: {}",
-                    item.predcDt, e.message
-                )
-            }
+                log.warn("[TideFetchTasklet] 파싱 실패 - predcDt: {}, 원인: {}", item.predcDt, e.message)
+            }.getOrNull()
         }
 
+        tideForecastBulkService.bulkUpsert(rows)
+
         log.debug("[TideFetchTasklet] upsert 완료 - 관측소: {}({}), 날짜: {}, {}건",
-            station.postName, station.postId, date, savedCount
+            station.postName, station.postId, today, savedCount
         )
         return savedCount
     }
