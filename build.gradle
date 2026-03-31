@@ -4,6 +4,7 @@ plugins {
     id 'org.springframework.boot' version '4.0.5'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.jetbrains.kotlin.plugin.jpa' version '2.2.21'
+    id 'com.google.devtools.ksp' version '2.3.0'
 }
 
 group = 'com.ho'
@@ -35,6 +36,12 @@ dependencies {
     implementation 'tools.jackson.module:jackson-module-kotlin'
     implementation 'net.javacrumbs.shedlock:shedlock-spring:7.7.0'
     implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0'
+
+    // QueryDSL
+    implementation 'io.github.openfeign.querydsl:querydsl-jpa:7.1'
+    implementation 'io.github.openfeign.querydsl:querydsl-spatial:7.1'
+    ksp 'io.github.openfeign.querydsl:querydsl-ksp-codegen:7.1'
+
     runtimeOnly 'org.postgresql:postgresql'
     implementation 'org.hibernate.orm:hibernate-spatial'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
@@ -45,6 +52,11 @@ dependencies {
 }
 
 kotlin {
+    // Q클래스 소스셋 등록
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
+    }
+
     compilerOptions {
         freeCompilerArgs.addAll '-Xjsr305=strict', '-Xannotation-default-target=param-property'
     }
@@ -58,4 +70,9 @@ allOpen {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// Q클래스 자동화 (gralde build 시)
+tasks.named('compileKotlin') {
+    dependsOn 'kspKotlin'
 }

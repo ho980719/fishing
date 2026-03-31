@@ -1,10 +1,12 @@
 package com.ho.fishingpoint.domain.post.entity
 
 import jakarta.persistence.*
+import org.hibernate.annotations.DynamicUpdate
 import org.locationtech.jts.geom.Point
 import java.time.LocalDateTime
 
 @Entity
+@DynamicUpdate
 @Table(name = "tb_tide_observation_post")
 class TideObservationPost(
     @Id

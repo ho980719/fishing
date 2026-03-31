@@ -6,6 +6,7 @@ import com.ho.fishingpoint.batch.client.dto.ExtrSe
 import com.ho.fishingpoint.domain.post.entity.TideObservationPost
 import com.ho.fishingpoint.domain.post.repository.TideObservationPostRepository
 import com.ho.fishingpoint.model.tide.TideForecastUpsertDto
+import com.ho.fishingpoint.service.tide.TideObservationPostService
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.core.step.StepContribution
@@ -20,7 +21,8 @@ import java.time.format.DateTimeFormatter
 class TideFetchTasklet(
     private val tideApiClient: TideApiClient,
     private val tideObservationPostRepository: TideObservationPostRepository,
-    private val tideForecastBulkService: TideForecastBulkService
+    private val tideForecastBulkService: TideForecastBulkService,
+    private val tideObservationPostService: TideObservationPostService
 ) : Tasklet {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -68,6 +70,12 @@ class TideFetchTasklet(
                 station.postName, station.postId, today
             )
             return 0
+        }
+
+        // 관측소 위/경도 update
+        if (station.location == null) {
+            val first = items.first()
+            tideObservationPostService.updateLocationIfAbsent(station, first.lot, first.lat)
         }
 
         var savedCount = 0
